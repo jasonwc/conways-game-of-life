@@ -3,30 +3,38 @@ class Controller
 
 	def initialize 
 		# initialize random board to start 
-		@board = [["X", "O", "O", "O", "X"], 
-				  	  ["O", "X", "X", "X", "O"], 
-		  		    ["O", "O", "O", "O", "X"], 
-		  		    ["X", "O", "X", "O", "O"], 
-		  		    ["O", "O", "O", "X", "O"]] 
-		@tracker = @board 
+		@board = [["X", "X", "O", "X", "O"], 
+				  	  ["X", "O", "X", "O", "X"], 
+		  		    ["O", "O", "O", "X", "X"], 
+		  		    ["X", "X", "O", "X", "X"], 
+		  		    ["O", "X", "O", "O", "X"]] 
+		@tracker = [["X", "X", "O", "X", "O"], 
+				  	  ["X", "O", "X", "O", "X"], 
+		  		    ["O", "O", "O", "X", "X"], 
+		  		    ["X", "X", "O", "X", "X"], 
+		  		    ["O", "X", "O", "O", "X"]]  
 		@counter = 0 
 		@continue = true 
 		update_board 
-		while @continue do 
-			puts "Tick: #{@counter}" 
+		while @continue do  
   		counter 
-  		check_alive 
-  		update_board 
+  		check_alive
+  		system('clear')
+  		update_board
+  		sleep(1)
   		check_end 
 		end 
 		end_message 
 	end 
 
-	def check_end 
-		alive = @board.include?('O') 
-		if alive == false 
-			@continue = false 
-		end 
+	def check_end
+		@continue = false
+		@board.each do |row|
+			if row.include?("O")
+				@continue = true
+				break
+			end
+		end
 	end 
 
 	def end_message 
@@ -42,8 +50,11 @@ class Controller
 	end 
 
 	def update_board 
-		# clone tracker array to board array, prints the board in a nice format 
-		@board = @tracker 
+		# clone tracker array to board array, prints the board in a nice format  
+		@tracker.each_with_index do |row, i|
+			@board[i] = row.clone
+		end
+		puts "Tick: #{@counter}"
 		@board.each do 
 			|r| puts r.map { |p| p }.join(" ") 
 		end 
@@ -51,7 +62,7 @@ class Controller
 
 	def counter 
 		# Update tick counter 
-		@counter = @counter + 1 
+		@counter += 1 
 	end 
 
 	def check_alive 
@@ -62,102 +73,65 @@ class Controller
 				#	|r| puts r.map { |p| p }.join(" ") 
 				#end 
 				cell = y
-				alive = 0
-				dead = 0
+				@alive = 0
+				@dead = 0
 				# For each cell x, y, check alive or dead, check adjacent:
 				# x+1, y 
-
-				if posx == 4
-					right_center = @board[0][posy]
-				else
-					right_center = @board[posx + 1][posy]
-				end
-				if right_center.include?('O') == true
-					alive = alive + 1
-				else
-					dead = dead + 1
-				end
-				# x-1, y 
-				left_center = @board[posx - 1][posy]
-				if left_center.include?('O') == true
-					alive = alive + 1
-				else
-					dead = dead + 1
-				end
-				# x, y+1 
-				middle_top = @board[posx][posy + 1]
-				if middle_top.include?('O') == true
-					alive = alive + 1
-				else
-					dead = dead + 1
-				end
-				# x, y-1
-				middle_bottom = @board[posx][posy - 1]
-				if middle_bottom.include?('O') == true
-					alive = alive + 1
-				else
-					dead = dead + 1
-				end
-				# x+1, y+1
-				if posx == 4
-					right_top = @board[0][posy + 1]
-				else
-					right_top = @board[posx + 1][posy + 1]
-				end
-				if right_top.include?('O') == true
-					alive = alive + 1
-				else
-					dead = dead + 1
-				end
-				# x+1, y-1
-				if posx == 4
-					right_bottom = @board[0][posy - 1]
-				else
-					right_bottom = @board[posx + 1][posy - 1]
-				end
-				if right_bottom.include?('O') == true
-					alive = alive + 1
-				else
-					dead = dead + 1
-				end
-				# x-1, y+1
-				left_top = @board[posx - 1][posy + 1]
-				if left_top.include?('O') == true
-					alive = alive + 1
-				else
-					dead = dead + 1
-				end
-				# x-1, y-1
-				left_bottom = @board[posx - 1][posy - 1]
-				if left_bottom.include?('O') == true
-					alive = alive + 1
-				else
-					dead = dead + 1
-				end
-				if cell == 1
-					if alive == 2 || alive == 3
+				check_surrounding(posx, posy, 1, 0)
+				check_surrounding(posx, posy, 0, 1)
+				check_surrounding(posx, posy, 1, 1)
+				check_surrounding(posx, posy, -1, 0)
+				check_surrounding(posx, posy, 0, -1)
+				check_surrounding(posx, posy, -1, -1)
+				check_surrounding(posx, posy, -1, 1)
+				check_surrounding(posx, posy, 1, -1)
+				#puts "Alive: #{@alive} Dead: #{@dead}"
+				if cell == 'O'
+					if @alive == 2 || @alive == 3
 						live(posx,posy)
 					else
 						die(posx,posy)
 					end
 				else
-					if alive == 3
+					if @alive == 3
 						live(posx,posy)
 					end
 				end
 			end
 		end
 	end
+
 		# if live = two or three live adjacent, live method # else die method 
 		# if dead = three live adjacent, live method # else die method end 
+	def check_surrounding(xpos, ypos, xmod, ymod)
+		x = xpos + xmod
+		if xpos + xmod == 5
+			x = 0
+		end
+		y = ypos + ymod
+		if ypos + ymod == 5
+			y = 0
+		end
+		adj_cell = @board[x][y]
+		if adj_cell.include?('O') == true
+			@alive += 1
+		else 
+			@dead += 1
+		end
+	end
+
+
+
 	def die(x,y) 
-		# For cell x,y: change to dead (0) on tracker array 
-		@tracker[x][y] = 'X' 
+		# For cell x,y: change to dead (X) on tracker array 
+		@tracker[x][y] = 'X'
+		#puts "Die" 
 	end 
 		
 	def live(x,y) 
-		# For cell x,y: change to alive (1) on tracker array 
+		# For cell x,y: change to alive (O) on tracker array 
 		@tracker[x][y] = 'O' 
+		#puts "Live"
 	end 
 end 
 
