@@ -84,7 +84,7 @@ class Controller
 
   def check_alive
     # these two loops go through every element in the @board array
-    # they give us both the actually value in the array ('X' or 'O') and the coordinates (I.E. [0, 4])
+    # they give us both the actual value in the array ('X' or 'O') and the coordinates (I.E. [0, 4])
     @board.each_with_index do |x, posx|
       x.each_with_index do |y, posy|
 	      # we use cell to store the alive/dead state of the cell
